@@ -1,3 +1,4 @@
+import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:logger/logger.dart';
 import 'package:pusher_channels_flutter/pusher_channels_flutter.dart';
 import 'package:waslny_pusher_test_driver/core/events/event_handler.dart';
@@ -18,7 +19,7 @@ import 'package:waslny_pusher_test_driver/core/services/lifecycle_manager.dart';
 
 class PusherService {
   final logger = Logger();
-  PusherChannelsFlutter pusher = PusherChannelsFlutter.getInstance();
+  late PusherChannelsFlutter pusher;
   NotificationHandler notificationHandler = NotificationHandler();
   final Map<String, EventHandler> _eventHandlers = {
     'account.suspended': AccountSuspendedHandler(),
@@ -38,6 +39,7 @@ class PusherService {
   Future<void> initPusher(
       String apiKey, String cluster, String authToken) async {
     try {
+      pusher = PusherChannelsFlutter.getInstance();
       await pusher.init(
         apiKey: apiKey,
         cluster: cluster,
@@ -64,7 +66,10 @@ class PusherService {
 
   @pragma('vm:entry-point')
   void onConnectionStateChange(dynamic currentState, dynamic previousState) {
-    logger.i("Connection: $currentState");
+    logger.i("Connection state changed from $previousState to $currentState");
+    if (currentState == 'connected') {
+      logger.i("Successfully connected to Pusher");
+    }
   }
 
   @pragma('vm:entry-point')
@@ -74,7 +79,7 @@ class PusherService {
 
   @pragma('vm:entry-point')
   void onEvent(PusherEvent event) {
-    // logger.e(event.eventName);
+    logger.e(event.eventName);
     notificationHandler.handle(event.data);
     final handler = _eventHandlers[event.eventName];
     if (handler != null) {
@@ -119,5 +124,9 @@ class PusherService {
   @pragma('vm:entry-point')
   void disconnect() {
     pusher.disconnect();
+  }
+
+  EventHandler? getEventHandler(String eventName) {
+    return _eventHandlers[eventName];
   }
 }

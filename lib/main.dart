@@ -2,8 +2,6 @@ import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:waslny_pusher_test_driver/core/services/background_service.dart';
-import 'package:waslny_pusher_test_driver/core/services/notification_service.dart';
 import 'package:waslny_pusher_test_driver/presentation/controllers/driver_controller.dart';
 import 'package:waslny_pusher_test_driver/presentation/controllers/pusher_controller.dart';
 import 'package:waslny_pusher_test_driver/presentation/screens/home_screen.dart';
@@ -32,11 +30,13 @@ void main() async {
     ],
     debug: true,
   );
-  // final pusherController =
-  //     PusherController("103|GscUMwMpztxjXUmjkalPBxeZJ6ieifmLN6Ao6VbUef20e669");
-  // pusherController.initPusherAndSync();
-  await initializeService();
+  final pusherController =
+      PusherController("103|GscUMwMpztxjXUmjkalPBxeZJ6ieifmLN6Ao6VbUef20e669");
+  pusherController.initPusherAndSync();
+
+  // await initializeService();
   Get.lazyPut(() => DriverController());
+  // Get.lazyPut(() => PusherService());
   WidgetsBinding.instance.addObserver(LifecycleManager());
   runApp(const MyApp());
 }
@@ -51,6 +51,9 @@ Future<void> _requestPermissions() async {
   if (await Permission.accessNotificationPolicy.isDenied) {
     await Permission.accessNotificationPolicy.request();
   }
+  if (await Permission.ignoreBatteryOptimizations.isDenied) {
+    await Permission.ignoreBatteryOptimizations.request();
+  }
 }
 
 class MyApp extends StatefulWidget {
@@ -63,14 +66,33 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   @override
   void initState() {
-    AwesomeNotifications().setListeners(
-        onActionReceivedMethod: NotificationService.onActionReceivedMethod,
-        onNotificationCreatedMethod:
-            NotificationService.onNotificationCreatedMethod,
-        onNotificationDisplayedMethod:
-            NotificationService.onNotificationDisplayedMethod,
-        onDismissActionReceivedMethod:
-            NotificationService.onDismissActionReceivedMethod);
+    // AwesomeNotifications().setListeners(
+    //     onActionReceivedMethod: NotificationService.onActionReceivedMethod,
+    //     onNotificationCreatedMethod:
+    //         NotificationService.onNotificationCreatedMethod,
+    //     onNotificationDisplayedMethod:
+    //         NotificationService.onNotificationDisplayedMethod,
+    //     onDismissActionReceivedMethod:
+    //         NotificationService.onDismissActionReceivedMethod);
+    // FlutterBackgroundService().on('onPusherEvent').listen((event) {
+    //   final pusherService = Get.find<PusherService>();
+    //   final handler = pusherService.getEventHandler(event!['eventName']);
+    //   if (handler != null) {
+    //     handler.handle(event['data']);
+    //   }
+    // });
+    // FlutterBackgroundService().on('setupPusher').listen((event) {
+    //   final pusherService = Get.find<PusherService>();
+    //   pusherService.initPusher(
+    //     event!['apiKey'],
+    //     event['cluster'],
+    //     event['authToken'],
+    //   );
+    //   final channels = List<String>.from(event['channels'] ?? []);
+    //   for (final channel in channels) {
+    //     pusherService.subscribeToChannel(channel);
+    //   }
+    // });
     super.initState();
   }
 

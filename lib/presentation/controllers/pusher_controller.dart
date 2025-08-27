@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:logger/logger.dart';
 import 'dart:convert';
 import 'package:waslny_pusher_test_driver/core/services/pusher_service.dart';
@@ -14,6 +15,11 @@ class PusherController {
   PusherController(this.authToken);
 
   Future<void> initPusherAndSync() async {
+    InternetConnection().onStatusChange.listen((status) {
+      if (status == InternetStatus.connected) {
+        syncAndSubscribe();
+      }
+    });
     try {
       final response = await http.get(
         Uri.parse(
