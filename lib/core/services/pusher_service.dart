@@ -34,6 +34,9 @@ class PusherService {
     'trip.time.near': TripTimeNearHandler(),
     'trip.available': TripAvailableForDriverHandler(),
     'trip.unavailable': TripUnavailableHandler(),
+    'unsubscribe':UnsubScribeHandlder(),
+    'subscribe':SubScribeHandlder(),
+
   };
   @pragma('vm:entry-point')
   Future<void> initPusher(
@@ -79,9 +82,9 @@ class PusherService {
 
   @pragma('vm:entry-point')
   void onEvent(PusherEvent event) {
-    logger.e(event.eventName);
-    notificationHandler.handle(event.data);
+    // notificationHandler.handle(event.data);
     final handler = _eventHandlers[event.eventName];
+
     if (handler != null) {
       if (!LifecycleManager.isBackground) {
         handler.handle(event.data);

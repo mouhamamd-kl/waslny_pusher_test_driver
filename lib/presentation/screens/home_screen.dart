@@ -12,7 +12,7 @@ import 'package:waslny_pusher_test_driver/presentation/screens/complete_trip_scr
 import 'package:waslny_pusher_test_driver/presentation/screens/cancel_trip_screen.dart';
 
 class HomeScreen extends StatelessWidget {
-  final DriverController controller = Get.find();
+  final DriverController controller = Get.put(DriverController());
   final NotificationService notificationService = NotificationService();
 
   @override
