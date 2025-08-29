@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:logger/logger.dart';
 import 'package:pusher_channels_flutter/pusher_channels_flutter.dart';
@@ -15,6 +17,8 @@ import 'package:waslny_pusher_test_driver/core/events/handlers/trip_started_hand
 import 'package:waslny_pusher_test_driver/core/events/handlers/trip_time_near_handler.dart';
 import 'package:waslny_pusher_test_driver/core/events/handlers/trip_available_for_driver_handler.dart';
 import 'package:waslny_pusher_test_driver/core/events/handlers/trip_unavailable_handler.dart';
+import 'package:waslny_pusher_test_driver/core/events/handlers/unsubscribe_handler.dart';
+import 'package:waslny_pusher_test_driver/core/events/handlers/subscribe_handler.dart';
 import 'package:waslny_pusher_test_driver/core/services/lifecycle_manager.dart';
 
 class PusherService {
@@ -34,9 +38,8 @@ class PusherService {
     'trip.time.near': TripTimeNearHandler(),
     'trip.available': TripAvailableForDriverHandler(),
     'trip.unavailable': TripUnavailableHandler(),
-    'unsubscribe':UnsubScribeHandlder(),
-    'subscribe':SubScribeHandlder(),
-
+    'unsubscribe':UnsubscribeHandler(),
+    'subscribe':SubscribeHandler(),
   };
   @pragma('vm:entry-point')
   Future<void> initPusher(
@@ -54,11 +57,21 @@ class PusherService {
         onDecryptionFailure: onDecryptionFailure,
         onMemberAdded: onMemberAdded,
         onMemberRemoved: onMemberRemoved,
-        authEndpoint: "https://waslny-project.vercel.app/api/broadcasting/auth",
         onAuthorizer: (channelName, socketId, options) async {
-          return {
-            'auth': 'Bearer $authToken',
-          };
+          final authUrl = Uri.parse(
+              "https://waslny-project.vercel.app/api/broadcasting/auth");
+          final response = await http.post(
+            authUrl,
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $authToken',
+            },
+            body: jsonEncode({
+              'socket_id': socketId,
+              'channel_name': channelName,
+            }),
+          );
+          return jsonDecode(response.body);
         },
       );
       await pusher.connect();
